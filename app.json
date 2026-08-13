@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "حسابیار فروشگاه",
+    "slug": "hesabiyar",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "android": {
+      "package": "com.sobhan.hesabiyar",
+      "permissions": [
+        "RECORD_AUDIO"
+      ]
+    },
+    "plugins": []
+  }
+}
