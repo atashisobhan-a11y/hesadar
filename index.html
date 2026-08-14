@@ -4,56 +4,220 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>حسابیار فروشگاه</title>
+
 <style>
 *{box-sizing:border-box;font-family:Tahoma,Arial,sans-serif}
-body{margin:0;background:#f3f4f6;color:#222;padding:20px}
-.app{max-width:700px;margin:auto}
-h1{text-align:center;color:#1769aa}
-.box{background:#fff;padding:20px;border-radius:16px;margin-top:20px;box-shadow:0 3px 15px #ddd}
-textarea{width:100%;height:120px;padding:12px;border:1px solid #ccc;border-radius:10px;font-size:16px;resize:none;direction:rtl}
-button{margin-top:12px;padding:12px 20px;border:0;border-radius:10px;background:#1769aa;color:#fff;font-size:16px;cursor:pointer}
-.voice{background:#159447;margin-right:8px}
-.result{margin-top:20px;font-size:18px;line-height:2}
+
+body{
+  margin:0;
+  background:#f3f4f6;
+  color:#222;
+  padding:20px
+}
+
+.app{
+  max-width:700px;
+  margin:auto
+}
+
+h1{
+  text-align:center;
+  color:#1769aa
+}
+
+.box{
+  background:white;
+  padding:20px;
+  border-radius:16px;
+  margin-top:20px;
+  box-shadow:0 3px 15px #ddd
+}
+
+textarea{
+  width:100%;
+  height:120px;
+  padding:12px;
+  border:1px solid #ccc;
+  border-radius:10px;
+  font-size:16px;
+  resize:none;
+  direction:rtl
+}
+
+button{
+  margin-top:12px;
+  padding:12px 20px;
+  border:0;
+  border-radius:10px;
+  background:#1769aa;
+  color:white;
+  font-size:16px;
+  cursor:pointer
+}
+
+.voice{
+  background:#159447;
+  margin-right:8px
+}
+
+.result{
+  margin-top:20px;
+  font-size:18px;
+  line-height:2
+}
 </style>
 </head>
+
 <body>
+
 <div class="app">
+
 <h1>🧾 حسابیار فروشگاه</h1>
+
 <div class="box">
+
 <h2>دستیار حسابداری</h2>
-<p>عملیات فروش یا خرید را به زبان طبیعی وارد کن:</p>
-<textarea id="text" placeholder="مثلاً: امروز یک موس ۲۰۰۰۰۰۰ تومان فروختم"></textarea>
+
+<p>
+عملیات فروش یا خرید را به زبان طبیعی وارد کن:
+</p>
+
+<textarea
+id="text"
+placeholder="مثلاً: امروز یک موس ۲۰۰۰۰۰۰ تومان فروختم">
+</textarea>
+
 <br>
-<button onclick="calculate()">ثبت عملیات</button>
-<button class="voice" onclick="startVoice()">🎤 صحبت کن</button>
-<div class="result" id="result">هنوز عملیاتی ثبت نشده است.</div>
+
+<button onclick="calculate()">
+ثبت عملیات
+</button>
+
+<button class="voice" onclick="startVoice()">
+🎤 صحبت کن
+</button>
+
+<div class="result" id="result">
+هنوز عملیاتی ثبت نشده است.
 </div>
+
 </div>
+
+</div>
+
 <script>
+
 function faToEn(s){
- return s.replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c)).replace(/,/g,"");
+
+return s
+.replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c))
+.replace(/,/g,"");
+
 }
+
 function calculate(){
- const text=document.getElementById("text").value.trim();
- if(!text){alert("لطفاً یک عملیات وارد کن.");return;}
- const numbers=text.match(/[\d۰-۹,]+/g);
- if(!numbers){document.getElementById("result").innerHTML="مبلغ را پیدا نکردم.";return;}
- const amount=Number(faToEn(numbers[numbers.length-1]));
- let type="عملیات";
- if(/فروخت|فروش|فروختم/.test(text)) type="فروش";
- else if(/خرید|خریدم/.test(text)) type="خرید";
- document.getElementById("result").innerHTML=
- "نوع عملیات: <b>"+type+"</b><br>مبلغ: <b>"+amount.toLocaleString("fa-IR")+" تومان</b>";
+
+const text=document
+.getElementById("text")
+.value
+.trim();
+
+if(!text){
+
+alert("لطفاً یک عملیات وارد کن.");
+
+return;
+
 }
+
+const numbers=text.match(/[\d۰-۹,]+/g);
+
+if(!numbers){
+
+document.getElementById("result").innerHTML=
+"مبلغ را پیدا نکردم.";
+
+return;
+
+}
+
+const amount=Number(
+faToEn(numbers[numbers.length-1])
+);
+
+let type="عملیات";
+
+if(
+text.includes("فروخت") ||
+text.includes("فروش") ||
+text.includes("فروختم")
+){
+
+type="فروش";
+
+}
+
+else if(
+text.includes("خرید") ||
+text.includes("خریدم")
+){
+
+type="خرید";
+
+}
+
+document.getElementById("result").innerHTML=
+
+"نوع عملیات: <b>"
++type+
+"</b><br>مبلغ: <b>"
++amount.toLocaleString("fa-IR")
++" تومان</b>";
+
+}
+
 function startVoice(){
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR){alert("مرورگر شما از تشخیص صدا پشتیبانی نمی‌کند.");return;}
- const r=new SR();
- r.lang="fa-IR"; r.continuous=false; r.interimResults=false;
- r.onresult=e=>document.getElementById("text").value=e.results[0][0].transcript;
- r.onerror=()=>alert("تشخیص صدا انجام نشد.");
- r.start();
+
+const SR=
+window.SpeechRecognition ||
+window.webkitSpeechRecognition;
+
+if(!SR){
+
+alert(
+"مرورگر شما از تشخیص صدا پشتیبانی نمی‌کند."
+);
+
+return;
+
 }
+
+const r=new SR();
+
+r.lang="fa-IR";
+
+r.continuous=false;
+
+r.interimResults=false;
+
+r.onresult=function(e){
+
+document.getElementById("text").value=
+e.results[0][0].transcript;
+
+};
+
+r.onerror=function(){
+
+alert("تشخیص صدا انجام نشد.");
+
+};
+
+r.start();
+
+}
+
 </script>
+
 </body>
 </html>
