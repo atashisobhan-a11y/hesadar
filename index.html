@@ -6,7 +6,10 @@
 <title>حسابیار فروشگاه</title>
 
 <style>
-*{box-sizing:border-box;font-family:Tahoma,Arial,sans-serif}
+*{
+  box-sizing:border-box;
+  font-family:Tahoma,Arial,sans-serif
+}
 
 body{
   margin:0;
@@ -16,7 +19,7 @@ body{
 }
 
 .app{
-  max-width:700px;
+  max-width:750px;
   margin:auto
 }
 
@@ -60,10 +63,55 @@ button{
   margin-right:8px
 }
 
+.clear{
+  background:#c0392b;
+  margin-right:8px
+}
+
 .result{
   margin-top:20px;
   font-size:18px;
   line-height:2
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:15px
+}
+
+.stat{
+  background:#eef6fc;
+  padding:15px;
+  border-radius:12px;
+  text-align:center
+}
+
+.stat strong{
+  display:block;
+  font-size:20px;
+  margin-top:8px
+}
+
+.transaction{
+  border-bottom:1px solid #eee;
+  padding:12px 0;
+  line-height:1.8
+}
+
+.empty{
+  text-align:center;
+  color:#777;
+  padding:15px
+}
+
+@media(max-width:600px){
+
+  .stats{
+    grid-template-columns:1fr
+  }
+
 }
 </style>
 </head>
@@ -73,6 +121,7 @@ button{
 <div class="app">
 
 <h1>🧾 حسابیار فروشگاه</h1>
+
 
 <div class="box">
 
@@ -103,121 +152,209 @@ placeholder="مثلاً: امروز یک موس ۲۰۰۰۰۰۰ تومان فرو
 
 </div>
 
+
+<div class="box">
+
+<h2>📊 خلاصه حساب</h2>
+
+<div class="stats">
+
+<div class="stat">
+فروش
+<strong id="sales">۰</strong>
+تومان
 </div>
+
+<div class="stat">
+خرید
+<strong id="purchases">۰</strong>
+تومان
+</div>
+
+<div class="stat">
+سود / زیان تقریبی
+<strong id="profit">۰</strong>
+تومان
+</div>
+
+</div>
+
+</div>
+
+
+<div class="box">
+
+<h2>📋 عملیات ثبت شده</h2>
+
+<div id="transactions">
+
+<div class="empty">
+هنوز عملیاتی ثبت نشده است.
+</div>
+
+</div>
+
+<button
+class="clear"
+onclick="clearData()">
+پاک کردن اطلاعات
+</button>
+
+</div>
+
+</div>
+
 
 <script>
 
-function faToEn(s){
 
-return s
-.replace(/[۰-۹]/g,c=>"۰۱۲۳۴۵۶۷۸۹".indexOf(c))
-.replace(/,/g,"");
+/* =========================
+   اطلاعات حساب
+========================= */
+
+let data =
+JSON.parse(
+localStorage.getItem("hesadar_data")
+) || {
+
+  sales: 0,
+
+  purchases: 0,
+
+  transactions: []
+
+};
+
+
+/* =========================
+   تبدیل اعداد فارسی
+========================= */
+
+function faToEn(text){
+
+  return text
+
+  .replace(/[۰-۹]/g,function(c){
+
+    return "۰۱۲۳۴۵۶۷۸۹".indexOf(c);
+
+  })
+
+  .replace(/,/g,"");
 
 }
+
+
+/* =========================
+   نمایش عدد
+========================= */
+
+function formatNumber(number){
+
+  return Number(number)
+  .toLocaleString("fa-IR");
+
+}
+
+
+/* =========================
+   ثبت عملیات
+========================= */
 
 function calculate(){
 
-const text=document
-.getElementById("text")
-.value
-.trim();
+  const text =
+  document
+  .getElementById("text")
+  .value
+  .trim();
 
-if(!text){
 
-alert("لطفاً یک عملیات وارد کن.");
+  if(!text){
 
-return;
+    alert(
+      "لطفاً یک عملیات وارد کن."
+    );
 
-}
+    return;
 
-const numbers=text.match(/[\d۰-۹,]+/g);
+  }
 
-if(!numbers){
 
-document.getElementById("result").innerHTML=
-"مبلغ را پیدا نکردم.";
+  const numbers =
+  text.match(/[\d۰-۹,]+/g);
 
-return;
 
-}
+  if(!numbers){
 
-const amount=Number(
-faToEn(numbers[numbers.length-1])
-);
+    document
+    .getElementById("result")
+    .innerHTML =
+    "مبلغ را پیدا نکردم.";
 
-let type="عملیات";
+    return;
 
-if(
-text.includes("فروخت") ||
-text.includes("فروش") ||
-text.includes("فروختم")
-){
+  }
 
-type="فروش";
 
-}
+  const amount =
+  Number(
+    faToEn(
+      numbers[numbers.length - 1]
+    )
+  );
 
-else if(
-text.includes("خرید") ||
-text.includes("خریدم")
-){
 
-type="خرید";
+  if(!amount || amount <= 0){
 
-}
+    alert(
+      "مبلغ وارد شده معتبر نیست."
+    );
 
-document.getElementById("result").innerHTML=
+    return;
 
-"نوع عملیات: <b>"
-+type+
-"</b><br>مبلغ: <b>"
-+amount.toLocaleString("fa-IR")
-+" تومان</b>";
+  }
 
-}
 
-function startVoice(){
+  let type = "عملیات";
 
-const SR=
-window.SpeechRecognition ||
-window.webkitSpeechRecognition;
 
-if(!SR){
+  /* تشخیص فروش */
 
-alert(
-"مرورگر شما از تشخیص صدا پشتیبانی نمی‌کند."
-);
+  if(
 
-return;
+    text.includes("فروخت") ||
 
-}
+    text.includes("فروش") ||
 
-const r=new SR();
+    text.includes("فروختم")
 
-r.lang="fa-IR";
+  ){
 
-r.continuous=false;
+    type = "فروش";
 
-r.interimResults=false;
+    data.sales += amount;
 
-r.onresult=function(e){
+  }
 
-document.getElementById("text").value=
-e.results[0][0].transcript;
 
-};
+  /* تشخیص خرید */
 
-r.onerror=function(){
+  else if(
 
-alert("تشخیص صدا انجام نشد.");
+    text.includes("خرید") ||
 
-};
+    text.includes("خریدم")
 
-r.start();
+  ){
 
-}
+    type = "خرید";
 
-</script>
+    data.purchases += amount;
 
-</body>
-</html>
+  }
+
+
+  else{
+
+    alert(
