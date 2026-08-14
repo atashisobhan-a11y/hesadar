@@ -1,333 +1,4 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>حسابیار فروشگاه</title>
-
-<style>
-*{
-  box-sizing:border-box;
-  font-family:Tahoma,Arial,sans-serif
-}
-
-body{
-  margin:0;
-  background:#f3f4f6;
-  color:#222;
-  padding:20px
-}
-
-.app{
-  max-width:700px;
-  margin:auto
-}
-
-h1{
-  text-align:center;
-  color:#1769aa
-}
-
-.box{
-  background:white;
-  padding:20px;
-  border-radius:16px;
-  margin-top:20px;
-  box-shadow:0 3px 15px #ddd
-}
-
-textarea{
-  width:100%;
-  height:120px;
-  padding:12px;
-  border:1px solid #ccc;
-  border-radius:10px;
-  font-size:16px;
-  resize:none;
-  direction:rtl
-}
-
-button{
-  margin-top:12px;
-  padding:12px 20px;
-  border:0;
-  border-radius:10px;
-  background:#1769aa;
-  color:white;
-  font-size:16px;
-  cursor:pointer
-}
-
-.voice{
-  background:#159447;
-  margin-right:8px
-}
-
-.clear{
-  background:#c0392b;
-  margin-right:8px
-}
-
-.result{
-  margin-top:20px;
-  font-size:18px;
-  line-height:2
-}
-
-.history{
-  margin-top:20px;
-  line-height:2
-}
-
-.item{
-  border-bottom:1px solid #ddd;
-  padding:10px 0
-}
-
-.empty{
-  color:#777;
-}
-</style>
-</head>
-
-<body>
-
-<div class="app">
-
-<h1>🧾 حسابیار فروشگاه</h1>
-
-<div class="box">
-
-<h2>دستیار حسابداری</h2>
-
-<p>
-عملیات فروش یا خرید را به زبان طبیعی وارد کن:
-</p>
-
-<textarea
-id="text"
-placeholder="مثلاً: امروز یک موس ۲۰۰۰۰۰۰ تومان فروختم">
-</textarea>
-
-<br>
-
-<button type="button" id="calculateBtn">
-ثبت عملیات
-</button>
-
-<button type="button" class="voice" id="voiceBtn">
-🎤 صحبت کن
-</button>
-
-<div class="result" id="result">
-هنوز عملیاتی ثبت نشده است.
-</div>
-
-</div>
-
-
-<div class="box">
-
-<h2>📋 عملیات ذخیره شده</h2>
-
-<div id="history" class="history">
-<div class="empty">
-هنوز عملیاتی ثبت نشده است.
-</div>
-</div>
-
-<button type="button" class="clear" id="clearBtn">
-پاک کردن اطلاعات
-</button>
-
-</div>
-
-</div>
-
-
-<script>
-
-/* =========================
-   تبدیل اعداد فارسی
-========================= */
-
-function faToEn(s){
-
-  return s
-    .replace(/[۰-۹]/g,c =>
-      "۰۱۲۳۴۵۶۷۸۹".indexOf(c)
-    )
-    .replace(/,/g,"")
-    .replace(/٬/g,"");
-
-}
-
-
-/* =========================
-   تبدیل عدد به فارسی
-========================= */
-
-function formatNumber(number){
-
-  return Number(number)
-    .toLocaleString("fa-IR");
-
-}
-
-
-/* =========================
-   دریافت اطلاعات ذخیره شده
-========================= */
-
-let transactions = [];
-
-try {
-
-  const saved =
-    localStorage.getItem("hesadar_transactions");
-
-  if(saved){
-
-    const parsed =
-      JSON.parse(saved);
-
-    if(Array.isArray(parsed)){
-
-      transactions = parsed;
-
-    }
-
-  }
-
-} catch(error) {
-
-  console.log(
-    "اطلاعات ذخیره شده قبلی قابل خواندن نبود."
-  );
-
-  transactions = [];
-
-}
-/* =========================
-   ذخیره اطلاعات
-========================= */
-
-function saveData(){
-
-  localStorage.setItem(
-    "hesadar_transactions",
-    JSON.stringify(transactions)
-  );
-
-}
-
-
-/* =========================
-   ثبت عملیات
-========================= */
-
-function calculate(){
-
-  const text =
-    document
-      .getElementById("text")
-      .value
-      .trim();
-
-  const result =
-    document.getElementById("result");
-
-
-  if(!text){
-
-    result.innerHTML =
-      "لطفاً یک عملیات وارد کن.";
-
-    return;
-  }
-
-
-  const numbers =
-    text.match(/[\d۰-۹,٬]+/g);
-
-
-  if(!numbers){
-
-    result.innerHTML =
-      "مبلغ را پیدا نکردم.";
-
-    return;
-  }
-
-
-  const amount =
-    Number(
-      faToEn(
-        numbers[numbers.length - 1]
-      )
-    );
-
-
-  if(!amount || amount <= 0){
-
-    result.innerHTML =
-      "مبلغ وارد شده معتبر نیست.";
-
-    return;
-  }
-
-
-  let type = "عملیات";
-
-
-  if(
-    text.includes("فروخت") ||
-    text.includes("فروش") ||
-    text.includes("فروختم")
-  ){
-
-    type = "فروش";
-
-  }
-
-  else if(
-    text.includes("خرید") ||
-    text.includes("خریدم")
-  ){
-
-    type = "خرید";
-
-  }
-
-
-  /* ساخت عملیات جدید */
-
-  const transaction = {
-
-    type: type,
-
-    text: text,
-
-    amount: amount,
-
-    date: new Date().toLocaleString("fa-IR")
-
-  };
-
-
-  /* اضافه کردن به لیست */
-
-  transactions.unshift(transaction);
-
-
-  /* ذخیره در مرورگر */
-
-  saveData();
-
-
-  /* نمایش نتیجه */
-
-  result.innerHTML =
+result.innerHTML =
     "✅ عملیات ثبت و ذخیره شد<br>" +
     "نوع عملیات: <b>" +
     type +
@@ -343,3 +14,239 @@ function calculate(){
 
 
   /* خالی کردن کادر */
+
+  document
+    .getElementById("text")
+    .value = "";
+
+}
+
+
+/* =========================
+   نمایش تاریخچه
+========================= */
+
+function showHistory(){
+
+  const history =
+    document.getElementById("history");
+
+
+  if(
+    transactions.length === 0
+  ){
+
+    history.innerHTML =
+      '<div class="empty">' +
+      'هنوز عملیاتی ثبت نشده است.' +
+      '</div>';
+
+    return;
+
+  }
+
+
+  history.innerHTML = "";
+
+
+  transactions.forEach(
+    function(item){
+
+      const div =
+        document.createElement("div");
+
+
+      div.className =
+        "item";
+
+
+      const title =
+        document.createElement("b");
+
+      title.textContent =
+        item.type;
+
+
+      const text =
+        document.createElement("div");
+
+      text.textContent =
+        item.text;
+
+
+      const amount =
+        document.createElement("div");
+
+      amount.innerHTML =
+        "مبلغ: <b>" +
+        formatNumber(item.amount) +
+        " تومان</b>";
+
+
+      const date =
+        document.createElement("small");
+
+      date.textContent =
+        item.date;
+
+
+      div.appendChild(title);
+
+      div.appendChild(text);
+
+      div.appendChild(amount);
+
+      div.appendChild(date);
+
+
+      history.appendChild(div);
+
+    }
+  );
+
+}
+
+
+/* =========================
+   دکمه ثبت
+========================= */
+
+document
+  .getElementById("calculateBtn")
+  .addEventListener(
+    "click",
+    calculate
+  );
+
+
+/* =========================
+   Enter
+========================= */
+
+document
+  .getElementById("text")
+  .addEventListener(
+    "keydown",
+    function(event){
+
+      if(
+        event.key === "Enter" &&
+        !event.shiftKey
+      ){
+
+        event.preventDefault();
+
+        calculate();
+
+      }
+
+    }
+  );
+
+
+/* =========================
+   صدا
+========================= */
+
+function startVoice(){
+
+  const SR =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+
+  if(!SR){
+
+    alert(
+      "مرورگر شما از تشخیص صدا پشتیبانی نمی‌کند."
+    );
+
+    return;
+
+  }
+
+
+  const r = new SR();
+
+  r.lang = "fa-IR";
+
+  r.continuous = false;
+
+  r.interimResults = false;
+
+
+  r.onresult =
+    function(e){
+
+      document
+        .getElementById("text")
+        .value =
+        e.results[0][0].transcript;
+
+    };
+
+
+  r.onerror =
+    function(){
+
+      alert(
+        "تشخیص صدا انجام نشد."
+      );
+
+    };
+
+
+  r.start();
+
+}
+
+
+document
+  .getElementById("voiceBtn")
+  .addEventListener(
+    "click",
+    startVoice
+  );
+
+
+/* =========================
+   پاک کردن
+========================= */
+
+document
+  .getElementById("clearBtn")
+  .addEventListener(
+    "click",
+    function(){
+
+      if(
+        confirm(
+          "آیا مطمئنی می‌خواهی تمام عملیات پاک شود؟"
+        )
+      ){
+
+        transactions = [];
+
+        saveData();
+
+        showHistory();
+
+        document
+          .getElementById("result")
+          .innerHTML =
+          "اطلاعات پاک شد.";
+
+      }
+
+    }
+  );
+
+
+/* نمایش اطلاعات قبلی */
+
+showHistory();
+
+</script>
+
+</body>
+</html>
