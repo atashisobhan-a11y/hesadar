@@ -1,14 +1,228 @@
-box.appendChild(div);
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حسابیار فروشگاه</title>
 
-    }
-  );
+<style>
+*{
+  box-sizing:border-box;
+  font-family:Tahoma,Arial,sans-serif
+}
+
+body{
+  margin:0;
+  background:#f3f4f6;
+  color:#222;
+  padding:20px
+}
+
+.app{
+  max-width:700px;
+  margin:auto
+}
+
+h1{
+  text-align:center;
+  color:#1769aa
+}
+
+.box{
+  background:white;
+  padding:20px;
+  border-radius:16px;
+  margin-top:20px;
+  box-shadow:0 3px 15px #ddd
+}
+
+textarea{
+  width:100%;
+  height:120px;
+  padding:12px;
+  border:1px solid #ccc;
+  border-radius:10px;
+  font-size:16px;
+  resize:none;
+  direction:rtl
+}
+
+button{
+  margin-top:12px;
+  padding:12px 20px;
+  border:0;
+  border-radius:10px;
+  background:#1769aa;
+  color:white;
+  font-size:16px;
+  cursor:pointer
+}
+
+.voice{
+  background:#159447;
+  margin-right:8px
+}
+
+.result{
+  margin-top:20px;
+  font-size:18px;
+  line-height:2
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<h1>🧾 حسابیار فروشگاه</h1>
+
+<div class="box">
+
+<h2>دستیار حسابداری</h2>
+
+<p>
+عملیات فروش یا خرید را به زبان طبیعی وارد کن:
+</p>
+
+<textarea
+id="text"
+placeholder="مثلاً: امروز یک موس ۲۰۰۰۰۰۰ تومان فروختم">
+</textarea>
+
+<br>
+
+<button type="button" id="calculateBtn">
+ثبت عملیات
+</button>
+
+<button type="button" class="voice" id="voiceBtn">
+🎤 صحبت کن
+</button>
+
+<div class="result" id="result">
+هنوز عملیاتی ثبت نشده است.
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+function faToEn(s){
+
+  return s
+    .replace(/[۰-۹]/g,c =>
+      "۰۱۲۳۴۵۶۷۸۹".indexOf(c)
+    )
+    .replace(/,/g,"");
 
 }
 
 
-/* =========================
-   تشخیص صدا
-========================= */
+function calculate(){
+
+  const text =
+    document
+      .getElementById("text")
+      .value
+      .trim();
+
+  const result =
+    document.getElementById("result");
+
+
+  if(!text){
+
+    result.innerHTML =
+      "لطفاً یک عملیات وارد کن.";
+
+    return;
+  }
+
+
+  const numbers =
+    text.match(/[\d۰-۹,]+/g);
+
+
+  if(!numbers){
+
+    result.innerHTML =
+      "مبلغ را پیدا نکردم.";
+
+    return;
+  }
+
+
+  const amount =
+    Number(
+      faToEn(
+        numbers[numbers.length - 1]
+      )
+    );
+
+
+  let type = "عملیات";
+
+
+  if(
+    text.includes("فروخت") ||
+    text.includes("فروش") ||
+    text.includes("فروختم")
+  ){
+
+    type = "فروش";
+
+  }
+
+  else if(
+    text.includes("خرید") ||
+    text.includes("خریدم")
+  ){
+
+    type = "خرید";
+
+  }
+
+
+  result.innerHTML =
+    "نوع عملیات: <b>" +
+    type +
+    "</b><br>" +
+    "مبلغ: <b>" +
+    amount.toLocaleString("fa-IR") +
+    " تومان</b>";
+
+}
+
+
+/* اتصال مستقیم دکمه به تابع */
+
+document
+  .getElementById("calculateBtn")
+  .addEventListener("click", calculate);
+
+
+/* ثبت با Enter */
+
+document
+  .getElementById("text")
+  .addEventListener("keydown", function(event){
+
+    if(
+      event.key === "Enter" &&
+      !event.shiftKey
+    ){
+
+      event.preventDefault();
+
+      calculate();
+
+    }
+
+  });
+
 
 function startVoice(){
 
@@ -24,107 +238,43 @@ function startVoice(){
     );
 
     return;
-
   }
 
 
-  const recognition =
-    new SR();
+  const r = new SR();
+
+  r.lang = "fa-IR";
+
+  r.continuous = false;
+
+  r.interimResults = false;
 
 
-  recognition.lang =
-    "fa-IR";
+  r.onresult = function(e){
 
-
-  recognition.continuous =
-    false;
-
-
-  recognition.interimResults =
-    false;
-
-
-  recognition.onresult =
-    function(event){
-
-      const text =
-        event
-        .results[0][0]
-        .transcript;
-
-
-      document
-        .getElementById("text")
-        .value = text;
-
-    };
-
-
-  recognition.onerror =
-    function(){
-
-      alert(
-        "تشخیص صدا انجام نشد."
-      );
-
-    };
-
-
-  recognition.start();
-
-}
-
-
-/* =========================
-   پاک کردن اطلاعات
-========================= */
-
-function clearData(){
-
-  const ok =
-    confirm(
-      "آیا مطمئنی تمام اطلاعات حسابیار پاک شود؟"
-    );
-
-
-  if(!ok){
-
-    return;
-
-  }
-
-
-  data = {
-
-    sales: 0,
-
-    purchases: 0,
-
-    transactions: []
+    document
+      .getElementById("text")
+      .value =
+      e.results[0][0].transcript;
 
   };
 
 
-  saveData();
+  r.onerror = function(){
 
-  updateScreen();
+    alert("تشخیص صدا انجام نشد.");
+
+  };
 
 
-  document
-    .getElementById("result")
-    .innerHTML =
-    "اطلاعات حسابیار پاک شد.";
+  r.start();
 
 }
 
 
-/* =========================
-   شروع برنامه
-========================= */
-
-loadData();
-
-updateScreen();
+document
+  .getElementById("voiceBtn")
+  .addEventListener("click", startVoice);
 
 </script>
 
