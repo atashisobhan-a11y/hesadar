@@ -1,314 +1,26 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>حسابیار فروشگاه</title>
+box.appendChild(div);
 
-<style>
-*{
-  box-sizing:border-box;
-  font-family:Tahoma,Arial,sans-serif
-}
-
-body{
-  margin:0;
-  background:#f3f4f6;
-  color:#222;
-  padding:20px
-}
-
-.app{
-  max-width:750px;
-  margin:auto
-}
-
-h1{
-  text-align:center;
-  color:#1769aa
-}
-
-.box{
-  background:white;
-  padding:20px;
-  border-radius:16px;
-  margin-top:20px;
-  box-shadow:0 3px 15px #ddd
-}
-
-textarea{
-  width:100%;
-  height:120px;
-  padding:12px;
-  border:1px solid #ccc;
-  border-radius:10px;
-  font-size:16px;
-  resize:none;
-  direction:rtl
-}
-
-button{
-  margin-top:12px;
-  padding:12px 20px;
-  border:0;
-  border-radius:10px;
-  background:#1769aa;
-  color:white;
-  font-size:16px;
-  cursor:pointer
-}
-
-.voice{
-  background:#159447;
-  margin-right:8px
-}
-
-.clear{
-  background:#c0392b;
-  margin-right:8px
-}
-
-.result{
-  margin-top:20px;
-  font-size:18px;
-  line-height:2
-}
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  margin-top:15px
-}
-
-.stat{
-  background:#eef6fc;
-  padding:15px;
-  border-radius:12px;
-  text-align:center
-}
-
-.stat strong{
-  display:block;
-  font-size:20px;
-  margin-top:8px
-}
-
-.transaction{
-  border-bottom:1px solid #eee;
-  padding:12px 0;
-  line-height:1.8
-}
-
-.empty{
-  text-align:center;
-  color:#777;
-  padding:15px
-}
-
-@media(max-width:600px){
-
-  .stats{
-    grid-template-columns:1fr
-  }
-
-}
-</style>
-</head>
-
-<body>
-
-<div class="app">
-
-<h1>🧾 حسابیار فروشگاه</h1>
-
-
-<div class="box">
-
-<h2>دستیار حسابداری</h2>
-
-<p>
-عملیات فروش یا خرید را به زبان طبیعی وارد کن:
-</p>
-
-<textarea
-id="text"
-placeholder="مثلاً: امروز یک موس ۲۰۰۰۰۰۰ تومان فروختم">
-</textarea>
-
-<br>
-
-<button onclick="calculate()">
-ثبت عملیات
-</button>
-
-<button class="voice" onclick="startVoice()">
-🎤 صحبت کن
-</button>
-
-<div class="result" id="result">
-هنوز عملیاتی ثبت نشده است.
-</div>
-
-</div>
-
-
-<div class="box">
-
-<h2>📊 خلاصه حساب</h2>
-
-<div class="stats">
-
-<div class="stat">
-فروش
-<strong id="sales">۰</strong>
-تومان
-</div>
-
-<div class="stat">
-خرید
-<strong id="purchases">۰</strong>
-تومان
-</div>
-
-<div class="stat">
-سود / زیان تقریبی
-<strong id="profit">۰</strong>
-تومان
-</div>
-
-</div>
-
-</div>
-
-
-<div class="box">
-
-<h2>📋 عملیات ثبت شده</h2>
-
-<div id="transactions">
-
-<div class="empty">
-هنوز عملیاتی ثبت نشده است.
-</div>
-
-</div>
-
-<button
-class="clear"
-onclick="clearData()">
-پاک کردن اطلاعات
-</button>
-
-</div>
-
-</div>
-
-
-<script>
-
-
-/* =========================
-   اطلاعات حساب
-========================= */
-
-let data =
-JSON.parse(
-localStorage.getItem("hesadar_data")
-) || {
-
-  sales: 0,
-
-  purchases: 0,
-
-  transactions: []
-
-};
-
-
-/* =========================
-   تبدیل اعداد فارسی
-========================= */
-
-function faToEn(text){
-
-  return text
-
-  .replace(/[۰-۹]/g,function(c){
-
-    return "۰۱۲۳۴۵۶۷۸۹".indexOf(c);
-
-  })
-
-  .replace(/,/g,"");
-
-}
-
-
-/* =========================
-   نمایش عدد
-========================= */
-
-function formatNumber(number){
-
-  return Number(number)
-  .toLocaleString("fa-IR");
-
-}
-
-
-/* =========================
-   ثبت عملیات
-========================= */
-
-function calculate(){
-
-  const text =
-  document
-  .getElementById("text")
-  .value
-  .trim();
-
-
-  if(!text){
-
-    alert(
-      "لطفاً یک عملیات وارد کن."
-    );
-
-    return;
-
-  }
-
-
-  const numbers =
-  text.match(/[\d۰-۹,]+/g);
-
-
-  if(!numbers){
-
-    document
-    .getElementById("result")
-    .innerHTML =
-    "مبلغ را پیدا نکردم.";
-
-    return;
-
-  }
-
-
-  const amount =
-  Number(
-    faToEn(
-      numbers[numbers.length - 1]
-    )
+    }
   );
 
+}
 
-  if(!amount || amount <= 0){
+
+/* =========================
+   تشخیص صدا
+========================= */
+
+function startVoice(){
+
+  const SR =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+
+  if(!SR){
 
     alert(
-      "مبلغ وارد شده معتبر نیست."
+      "مرورگر شما از تشخیص صدا پشتیبانی نمی‌کند."
     );
 
     return;
@@ -316,45 +28,105 @@ function calculate(){
   }
 
 
-  let type = "عملیات";
+  const recognition =
+    new SR();
 
 
-  /* تشخیص فروش */
+  recognition.lang =
+    "fa-IR";
 
-  if(
 
-    text.includes("فروخت") ||
+  recognition.continuous =
+    false;
 
-    text.includes("فروش") ||
 
-    text.includes("فروختم")
+  recognition.interimResults =
+    false;
 
-  ){
 
-    type = "فروش";
+  recognition.onresult =
+    function(event){
 
-    data.sales += amount;
+      const text =
+        event
+        .results[0][0]
+        .transcript;
+
+
+      document
+        .getElementById("text")
+        .value = text;
+
+    };
+
+
+  recognition.onerror =
+    function(){
+
+      alert(
+        "تشخیص صدا انجام نشد."
+      );
+
+    };
+
+
+  recognition.start();
+
+}
+
+
+/* =========================
+   پاک کردن اطلاعات
+========================= */
+
+function clearData(){
+
+  const ok =
+    confirm(
+      "آیا مطمئنی تمام اطلاعات حسابیار پاک شود؟"
+    );
+
+
+  if(!ok){
+
+    return;
 
   }
 
 
-  /* تشخیص خرید */
+  data = {
 
-  else if(
+    sales: 0,
 
-    text.includes("خرید") ||
+    purchases: 0,
 
-    text.includes("خریدم")
+    transactions: []
 
-  ){
-
-    type = "خرید";
-
-    data.purchases += amount;
-
-  }
+  };
 
 
-  else{
+  saveData();
 
-    alert(
+  updateScreen();
+
+
+  document
+    .getElementById("result")
+    .innerHTML =
+    "اطلاعات حسابیار پاک شد.";
+
+}
+
+
+/* =========================
+   شروع برنامه
+========================= */
+
+loadData();
+
+updateScreen();
+
+</script>
+
+</body>
+</html>
