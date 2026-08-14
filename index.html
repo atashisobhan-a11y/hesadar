@@ -179,12 +179,35 @@ function formatNumber(number){
    دریافت اطلاعات ذخیره شده
 ========================= */
 
-let transactions =
-  JSON.parse(
-    localStorage.getItem("hesadar_transactions")
-  ) || [];
+let transactions = [];
 
+try {
 
+  const saved =
+    localStorage.getItem("hesadar_transactions");
+
+  if(saved){
+
+    const parsed =
+      JSON.parse(saved);
+
+    if(Array.isArray(parsed)){
+
+      transactions = parsed;
+
+    }
+
+  }
+
+} catch(error) {
+
+  console.log(
+    "اطلاعات ذخیره شده قبلی قابل خواندن نبود."
+  );
+
+  transactions = [];
+
+}
 /* =========================
    ذخیره اطلاعات
 ========================= */
